@@ -23,6 +23,8 @@ export default {
 
     if (request.method !== "POST") return new Response("OK");
 
+    Logger.info('request_received', { contentType });
+
     // 验证 Content-Type
     const contentType = request.headers.get("content-type") || "";
     if (!contentType.includes("application/json")) {
@@ -45,16 +47,27 @@ export default {
     }
 
     if (update.callback_query) {
+      Logger.info('callback_query_received', { userId: update.callback_query.from?.id });
       await handleCallbackQuery(update.callback_query, normalizedEnv, ctx);
       return new Response("OK");
     }
 
     const msg = update.message;
-    if (!msg) return new Response("OK");
+    if (!msg) {
+        Logger.info('no_message_in_update', { updateKeys: Object.keys(update).join(',') });
+        return new Response("OK");
+    }
+
+    Logger.info('message_received', {
+        chatId: msg.chat?.id,
+        chatType: msg.chat?.type,
+        textPreview: (msg.text || msg.caption || '').substring(0, 50)
+    });
 
     ctx.waitUntil(flushExpiredMediaGroups(normalizedEnv, Date.now()));
 
     if (msg.chat && msg.chat.type === "private") {
+      Logger.info('routing_to_private', { userId: msg.chat.id });
       try {
         await handlePrivateMessage(msg, normalizedEnv, ctx);
       } catch (e) {
@@ -84,6 +97,11 @@ export default {
         }
     }
 
+    Logger.info('unhandled_update', {
+        chatType: msg.chat?.type,
+        supergroupId: normalizedEnv.SUPERGROUP_ID,
+        msgChatId: msg.chat?.id ? String(msg.chat.id) : 'none'
+    });
     return new Response("OK");
   },
 };
