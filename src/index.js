@@ -23,10 +23,10 @@ export default {
 
     if (request.method !== "POST") return new Response("OK");
 
-    Logger.info('request_received', { contentType });
-
     // 验证 Content-Type
     const contentType = request.headers.get("content-type") || "";
+    Logger.info('request_received', { contentType });
+
     if (!contentType.includes("application/json")) {
         Logger.warn('invalid_content_type', { contentType });
         return new Response("OK");
