@@ -10,9 +10,10 @@ compatibility_date = "2024-11-30"
 #id = "YOUR_KV_NAMESPACE_ID"
 
 # --- 环境变量 ---
-# 值留空：实际运行时从 Cloudflare Dashboard → Settings → Variables 读取。
-# 在这里声明是为了防止部署后变量丢失。
-[vars]
-BOT_TOKEN = ""
-SUPERGROUP_ID = ""
-ADMIN_IDS = ""
+# 在 Cloudflare Dashboard → Settings → Variables 中设置：
+#   BOT_TOKEN, SUPERGROUP_ID, ADMIN_IDS
+# 
+# KV 命名空间绑定也在 Dashboard → Settings → KV Namespace Bindings 中手动添加：
+#   变量名 TOPIC_MAP，选择你的 KV 命名空间。
+# 
+# 以上绑定一旦在 Dashboard 设置好，不会被后续的 Git 自动部署清除。
