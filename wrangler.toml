@@ -17,16 +17,9 @@ head_sampling_rate = 1
   persist = true
   head_sampling_rate = 1
 
-# --- KV 命名空间绑定 ---
-# 替换 YOUR_KV_ID 为 Dashboard → KV → TOPIC_MAP → 右上角的 ID
-[[kv_namespaces]]
-binding = "TOPIC_MAP"
-id = "YOUR_KV_ID"
-
-# --- 环境变量 ---
-# 值仅作模板占位。部署后在 Dashboard 中改成真实值，
-# 只要 key 在 toml 中声明了，Dashboard 的值就不会被清除。
-[vars]
-BOT_TOKEN = "YOUR_BOT_TOKEN"
-SUPERGROUP_ID = "-100xxxxxxxxxx"
-ADMIN_IDS = ""
+# --- 环境变量和 KV 绑定 ---
+# 全部在 Cloudflare Dashboard → Settings 中手动配置：
+#   Variables: BOT_TOKEN, SUPERGROUP_ID, ADMIN_IDS
+#   KV Namespace Bindings: TOPIC_MAP
+# 
+# wrangler.toml 不声明这些，Git 部署时就不会覆盖/清除 Dashboard 配置。
