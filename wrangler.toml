@@ -2,6 +2,21 @@ name = "telegram-private-chatbot"
 main = "src/index.js"
 compatibility_date = "2024-11-30"
 
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+  [observability.logs]
+  enabled = true
+  head_sampling_rate = 1
+  persist = true
+  invocation_logs = true
+
+  [observability.traces]
+  enabled = false
+  persist = true
+  head_sampling_rate = 1
+
 # --- KV 命名空间绑定 ---
 # 取消下面注释并填写你自己的 KV Namespace ID 后即可部署。
 # 也可以在 Cloudflare Dashboard → Settings → KV Namespace Bindings 手动绑定。
