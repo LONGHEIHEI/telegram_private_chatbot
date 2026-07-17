@@ -4,6 +4,14 @@ import { handlePrivateMessage, handleAdminReply, handleCallbackQuery, updateThre
 
 export default {
   async fetch(request, env, ctx) {
+    console.log(JSON.stringify({
+        hasTopicMap: !!env.TOPIC_MAP,
+        hasBotToken: !!env.BOT_TOKEN,
+        hasSupergroupId: !!env.SUPERGROUP_ID,
+        supergroupIdType: typeof env.SUPERGROUP_ID,
+        supergroupIdValue: String(env.SUPERGROUP_ID).substring(0, 10)
+    }));
+
     // 环境自检
     if (!env.TOPIC_MAP) return new Response("Error: KV 'TOPIC_MAP' not bound.");
     if (!env.BOT_TOKEN) return new Response("Error: BOT_TOKEN not set.");
