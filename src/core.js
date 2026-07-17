@@ -73,6 +73,15 @@ export async function handleAdminReply(msg, env, ctx) {
         return;
     }
 
+    // /help 命令不限话题，General 和任意用户话题均可使用
+    if (text === "/help") {
+        const commandHandler = getCommand(text);
+        if (commandHandler) {
+            await commandHandler({ env, threadId });
+        }
+        return;
+    }
+
     // 反查用户 ID
     const userId = await resolveUserId(env, threadId);
     if (!userId) return;
