@@ -1,10 +1,13 @@
 import { Logger } from './logger.js';
+import { initializeConfig } from './config.js';
 import { tgCall } from './api.js';
 import { handlePrivateMessage, handleAdminReply, handleCallbackQuery, updateThreadStatus, flushExpiredMediaGroups } from './core.js';
 
 export default {
   async fetch(request, env, ctx) {
-    console.log(JSON.stringify({
+
+    // 初始化配置（会从环境变量中读取并验证）
+    initializeConfig(env);    console.log(JSON.stringify({
         hasTopicMap: !!env.TOPIC_MAP,
         hasBotToken: !!env.BOT_TOKEN,
         hasSupergroupId: !!env.SUPERGROUP_ID,

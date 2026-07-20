@@ -3,7 +3,7 @@ import { Logger } from './logger.js';
 import { safeGetJSON } from './utils.js';
 import { isAdminUser, checkRateLimit, tgCall, getAllKeys } from './api.js';
 import { sendVerificationChallenge, handleCallbackQuery } from './verification.js';
-import { forwardToTopic } from './forward.js';
+import { forwardToTopic } from './forward-service.js';
 import { handleMediaGroup } from './media.js';
 import { updateThreadStatus } from './topic.js';
 import { getCommand, handleCleanupCommand } from './commands.js';

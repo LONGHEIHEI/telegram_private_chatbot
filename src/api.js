@@ -1,13 +1,16 @@
 import { CONFIG } from './config.js';
 import { Logger } from './logger.js';
 import { safeGetJSON, normalizeTgDescription, isTopicMissingOrDeleted, isTestMessageInvalid } from './utils.js';
+import { AdminCacheWrapper, ThreadHealthCacheWrapper, cleanupAllCaches } from './cache-manager.js';
+import { retryOperation, classifyError, isRetryableError, withCircuitBreaker } from './retry-manager.js';
 
-// 线程健康检查缓存，减少频繁探测请求
-export const threadHealthCache = new Map();
 // 同一实例内的并发保护：避免同一用户短时间内重复创建话题
 export const topicCreateInFlight = new Map();
-// 管理员权限缓存（实例内）
-const adminStatusCache = new Map();
+
+// 定期清理缓存
+setInterval(() => {
+    cleanupAllCaches();
+}, 60000); // 每分钟清理一次
 
 // --- 管理员工具 ---
 
@@ -29,9 +32,10 @@ export async function isAdminUser(env, userId) {
     if (allowlist && allowlist.has(String(userId))) return true;
 
     const cacheKey = String(userId);
-    const now = Date.now();
-    const cached = adminStatusCache.get(cacheKey);
-    if (cached && (now - cached.ts < CONFIG.ADMIN_CACHE_TTL_SECONDS * 1000)) {
+    
+    // 使用新的缓存包装器
+    const cached = AdminCacheWrapper.get(cacheKey);
+    if (cached) {
         return cached.isAdmin;
     }
 
@@ -39,7 +43,8 @@ export async function isAdminUser(env, userId) {
     const kvVal = await env.TOPIC_MAP.get(kvKey);
     if (kvVal === "1" || kvVal === "0") {
         const isAdmin = kvVal === "1";
-        adminStatusCache.set(cacheKey, { ts: now, isAdmin });
+        const now = Date.now();
+        AdminCacheWrapper.set(cacheKey, { ts: now, isAdmin }, CONFIG.ADMIN_CACHE_TTL_SECONDS * 1000);
         return isAdmin;
     }
 
@@ -52,7 +57,8 @@ export async function isAdminUser(env, userId) {
         const status = res.result?.status;
         const isAdmin = res.ok && (status === "creator" || status === "administrator");
         await env.TOPIC_MAP.put(kvKey, isAdmin ? "1" : "0", { expirationTtl: CONFIG.ADMIN_CACHE_TTL_SECONDS });
-        adminStatusCache.set(cacheKey, { ts: now, isAdmin });
+        const now = Date.now();
+        AdminCacheWrapper.set(cacheKey, { ts: now, isAdmin }, CONFIG.ADMIN_CACHE_TTL_SECONDS * 1000);
         return isAdmin;
     } catch (e) {
         Logger.warn('admin_check_failed', { userId });
@@ -93,6 +99,15 @@ export async function getAllKeys(env, prefix) {
 // --- Telegram API 调用 ---
 
 export async function tgCall(env, method, body, timeout = CONFIG.API_TIMEOUT_MS) {
+    return withCircuitBreaker(async () => {
+        return await performApiCall(env, method, body, timeout);
+    });
+}
+
+/**
+ * 实际执行 API 调用（内部函数）
+ */
+async function performApiCall(env, method, body, timeout) {
     let base = env.API_BASE || "https://api.telegram.org";
 
     // 强制 HTTPS

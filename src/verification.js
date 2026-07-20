@@ -2,8 +2,7 @@ import { CONFIG, LOCAL_QUESTIONS } from './config.js';
 import { Logger } from './logger.js';
 import { secureRandomInt, secureRandomId, shuffleArray } from './utils.js';
 import { checkRateLimit, tgCall } from './api.js';
-// forwardToTopic 通过循环引用从 forward.js 导入，延迟到运行时解析
-import { forwardToTopic } from './forward.js';
+import { forwardToTopic } from './forward-service.js';
 
 export async function sendVerificationChallenge(userId, env, pendingMsgId) {
     // 检查是否已有进行中的验证

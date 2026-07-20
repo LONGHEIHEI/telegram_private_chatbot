@@ -17,9 +17,30 @@ head_sampling_rate = 1
   persist = true
   head_sampling_rate = 1
 
-# --- 环境变量和 KV 绑定 ---
-# 全部在 Cloudflare Dashboard → Settings 中手动配置：
+# --- 敏感配置全部在 Cloudflare Dashboard → Settings 中手动配置 ---
 #   Variables: BOT_TOKEN, SUPERGROUP_ID, ADMIN_IDS
 #   KV Namespace Bindings: TOPIC_MAP
 # 
 # wrangler.toml 不声明这些，Git 部署时就不会覆盖/清除 Dashboard 配置。
+
+# --- 以下配置可以通过环境变量覆盖代码中的默认值 ---
+[vars]
+NODE_ENV = "production"
+DEBUG_MODE = "false"
+LOG_LEVEL = "info"
+
+# 开发环境配置（可选）
+# [[env.development.vars]]
+# NODE_ENV = "development"
+# DEBUG_MODE = "true"
+# LOG_LEVEL = "debug"
+# RATE_LIMIT_MESSAGE = "100"
+# API_TIMEOUT_MS = "15000"
+
+# 可以覆盖的配置项（通过 Dashboard 设置会优先于这里）：
+# - VERIFY_ID_LENGTH: 验证码长度 (默认: 16)
+# - API_TIMEOUT_MS: API超时时间 (默认: 10000)
+# - RATE_LIMIT_MESSAGE: 消息速率限制 (默认: 45)
+# - CIRCUIT_FAILURE_THRESHOLD: 断路器失败阈值 (默认: 5)
+# - CACHE_MAX_SIZE: 缓存最大大小 (默认: 10000)
+# - 等等... 参见 src/config.js 中的 DEFAULT_CONFIG
