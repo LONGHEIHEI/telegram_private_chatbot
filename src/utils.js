@@ -50,9 +50,7 @@ export function isTopicMissingOrDeleted(description) {
            desc.includes("topic deleted") ||
            desc.includes("thread deleted") ||
            desc.includes("forum topic not found") ||
-           desc.includes("topic closed permanently") ||
-           desc.includes("chat not found") ||
-           desc.includes("not found");
+           desc.includes("topic closed permanently");
 }
 
 export function isTestMessageInvalid(description) {
