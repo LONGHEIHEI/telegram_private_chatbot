@@ -12,7 +12,7 @@ const LogLevel = {
     ERROR: 3
 };
 
-class Logger {
+class LoggerImpl {
     constructor() {
         this.minLevel = this.getLogLevelFromEnv();
         this.logCounts = { debug: 0, info: 0, warn: 0, error: 0 };
@@ -136,7 +136,7 @@ class Logger {
 }
 
 // 导出单例
-export const Logger = new Logger();
+export const Logger = new LoggerImpl();
 
 // 导出日志级别常量
 export { LogLevel };
