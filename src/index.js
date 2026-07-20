@@ -1,6 +1,5 @@
 import { Logger } from './logger.js';
 import { initializeConfig } from './config.js';
-import { tgCall } from './api.js';
 import { triggerScheduledCleanup } from './api.js';
 import { handlePrivateMessage, handleAdminReply, handleCallbackQuery, updateThreadStatus, flushExpiredMediaGroups } from './core.js';
 

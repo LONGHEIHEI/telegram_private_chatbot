@@ -7,13 +7,16 @@ import { retryOperation, classifyError, isRetryableError, withCircuitBreaker } f
 // 同一实例内的并发保护：避免同一用户短时间内重复创建话题
 export const topicCreateInFlight = new Map();
 
+// 使用全局变量记录上次清理时间
+let lastCacheCleanupTime = 0;
+
 /**
  * 在请求处理时触发缓存清理（如果有必要）
  */
 export function triggerScheduledCleanup() {
     const now = Date.now();
-    if (!window.lastCacheCleanup || (now - window.lastCacheCleanup > CONFIG.CACHE_CLEANUP_INTERVAL_MS)) {
-        window.lastCacheCleanup = now;
+    if (lastCacheCleanupTime === 0 || (now - lastCacheCleanupTime > CONFIG.CACHE_CLEANUP_INTERVAL_MS)) {
+        lastCacheCleanupTime = now;
         cleanupAllCaches();
     }
 }
