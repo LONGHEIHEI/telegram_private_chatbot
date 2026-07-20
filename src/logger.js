@@ -12,6 +12,14 @@ const LogLevel = {
     ERROR: 3
 };
 
+// 级别名称映射
+const LEVEL_NAMES = {
+    [LogLevel.DEBUG]: 'DEBUG',
+    [LogLevel.INFO]: 'INFO', 
+    [LogLevel.WARN]: 'WARN',
+    [LogLevel.ERROR]: 'ERROR'
+};
+
 class LoggerImpl {
     constructor() {
         this.minLevel = this.getLogLevelFromEnv();
@@ -36,7 +44,7 @@ class LoggerImpl {
     formatLogEntry(level, action, data = {}, error = null) {
         const entry = {
             timestamp: new Date().toISOString(),
-            level: level.toUpperCase(),
+            level: LEVEL_NAMES[level] || 'UNKNOWN',
             action,
             ...data
         };
