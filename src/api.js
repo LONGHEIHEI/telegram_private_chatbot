@@ -7,10 +7,16 @@ import { retryOperation, classifyError, isRetryableError, withCircuitBreaker } f
 // 同一实例内的并发保护：避免同一用户短时间内重复创建话题
 export const topicCreateInFlight = new Map();
 
-// 定期清理缓存
-setInterval(() => {
-    cleanupAllCaches();
-}, 60000); // 每分钟清理一次
+/**
+ * 在请求处理时触发缓存清理（如果有必要）
+ */
+export function triggerScheduledCleanup() {
+    const now = Date.now();
+    if (!window.lastCacheCleanup || (now - window.lastCacheCleanup > CONFIG.CACHE_CLEANUP_INTERVAL_MS)) {
+        window.lastCacheCleanup = now;
+        cleanupAllCaches();
+    }
+}
 
 // --- 管理员工具 ---
 
@@ -86,12 +92,32 @@ export async function checkRateLimit(userId, env, action = 'message', limit = 20
 export async function getAllKeys(env, prefix) {
     const allKeys = [];
     let cursor = undefined;
+    let iterationCount = 0;
+    const maxIterations = 100; // 防止无限循环
 
     do {
+        iterationCount++;
+        if (iterationCount > maxIterations) {
+            Logger.warn('kv_list_max_iterations_reached', { prefix, iterationCount });
+            break;
+        }
+
         const result = await env.TOPIC_MAP.list({ prefix, cursor });
+        
+        if (!result || !result.keys) {
+            Logger.warn('kv_list_invalid_result', { prefix, cursor, iterationCount });
+            break;
+        }
+        
         allKeys.push(...result.keys);
         cursor = result.list_complete ? undefined : result.cursor;
     } while (cursor);
+
+    Logger.debug('kv_list_completed', { 
+        prefix, 
+        totalKeys: allKeys.length,
+        iterations: iterationCount 
+    });
 
     return allKeys;
 }
